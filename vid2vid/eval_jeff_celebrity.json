@@ -1,0 +1,5 @@
+{"file_path": "./demo_selfie", "src_vid_name": "jeff_1", "prompt": "Elon Musk is giving a talk", "diffusion_steps": "4", "noise_strength": "0.4"}
+{"file_path": "./demo_selfie", "src_vid_name": "jeff_2", "prompt": "Will Smith is giving a talk", "diffusion_steps": "4", "noise_strength": "0.4"}
+{"file_path": "./demo_selfie", "src_vid_name": "jeff_3", "prompt": "Leonardo DiCaprio is giving a talk", "diffusion_steps": "4", "noise_strength": "0.4"}
+{"file_path": "./demo_selfie", "src_vid_name": "jeff_4", "prompt": "Bill Gates is giving a talk", "diffusion_steps": "4", "noise_strength": "0.4"}
+{"file_path": "./demo_selfie", "src_vid_name": "jeff_5", "prompt": "Taylor Swift is giving a talk", "diffusion_steps": "4", "noise_strength": "0.4"}

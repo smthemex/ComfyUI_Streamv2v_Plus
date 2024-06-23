@@ -1,0 +1,8 @@
+{"file_path": "./demo_selfie", "src_vid_name": "jeff_1", "prompt": "a man is giving a talk, pixel art, PixArFK.", "diffusion_steps": "4", "noise_strength": "0.6", "model_id": "runwayml/stable-diffusion-v1-5"}
+{"file_path": "./demo_selfie", "src_vid_name": "jeff_1", "prompt": "lowpoly style, a man is giving a talk.", "diffusion_steps": "4", "noise_strength": "0.8", "model_id": "runwayml/stable-diffusion-v1-5"}
+{"file_path": "./demo_selfie", "src_vid_name": "jeff_1", "prompt": "a man is giving a talk, monochrome, sketch, traditional media, Pencil drawing.", "diffusion_steps": "4", "noise_strength": "0.8", "model_id": "runwayml/stable-diffusion-v1-5"}
+{"file_path": "./demo_selfie", "src_vid_name": "jeff_1", "prompt": "Claymation, a man is giving a talk.", "diffusion_steps": "4", "noise_strength": "0.4", "model_id": "runwayml/stable-diffusion-v1-5"}
+{"file_path": "./demo_selfie", "src_vid_name": "jeff_1", "prompt": "crayons doodle, a man is giving a talk.", "diffusion_steps": "4", "noise_strength": "0.4", "model_id": "runwayml/stable-diffusion-v1-5"}
+{"file_path": "./demo_selfie", "src_vid_name": "jeff_1", "prompt": "oil painting, a man is giving a talk.", "diffusion_steps": "4", "noise_strength": "0.8", "model_id": "runwayml/stable-diffusion-v1-5"}
+{"file_path": "./demo_selfie", "src_vid_name": "jeff_1", "prompt": "lvngvncnt, Van Gogh style, a man is giving a talk.", "diffusion_steps": "4", "noise_strength": "0.6", "model_id": "dallinmackay/Van-Gogh-diffusion"}
+{"file_path": "./demo_selfie", "src_vid_name": "jeff_1", "prompt": "A flat 2d anime of a man is giving a talk.", "diffusion_steps": "4", "noise_strength": "0.4", "model_id": "jinaai/flat-2d-animerge"}
