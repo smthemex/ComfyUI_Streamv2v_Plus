@@ -1,0 +1,15 @@
+[project]
+name = "comfyui_streamv2v_plus"
+description = "[a/StreamV2V](https://github.com/Jeff-LiangF/streamv2v) for ComfyUI"
+version = "1.0.0"
+license = "LICENSE"
+dependencies = ["einops", "av", "peft", "fire"]
+
+[project.urls]
+Repository = "https://github.com/smthemex/ComfyUI_Streamv2v_Plus"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI_Streamv2v_Plus"
+Icon = ""
