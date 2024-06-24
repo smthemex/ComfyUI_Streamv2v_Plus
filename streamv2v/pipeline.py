@@ -106,8 +106,8 @@ class StreamV2V:
 
         model_path = os.path.join(path_dir,"models")
         model_lists = os.listdir(model_path)
-        if "lcm-lora-sdv1-5.safetensors" in model_lists: # 加入本地模型支持
-            pretrained_model_name_or_path_or_dict=get_instance_path(os.path.join(model_path,"lcm-lora-sdv1-5.safetensors"))
+        if "pytorch_lora_weights.safetensors" in model_lists: # 加入本地模型支持
+            pretrained_model_name_or_path_or_dict=get_instance_path(os.path.join(model_path,"pytorch_lora_weights.safetensors")) #lcm-lora-sdv1-5.safetensors
         else:
            snapshot_download("latent-consistency/lcm-lora-sdv1-5",local_dir=get_instance_path(model_path))
            pretrained_model_name_or_path_or_dict=get_instance_path(os.path.join(model_path,"pytorch_lora_weights.safetensors"))
