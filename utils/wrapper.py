@@ -460,11 +460,11 @@ class StreamV2VWrapper:
             try:
                 pipe = pipeline_cls.from_single_file(model_id_or_path).to(device=self.device, dtype=self.dtype)
             except Exception as e:
-                logging.error(f"Failed to load model from Hugging Face: {e}")
+                raise "Failed to load model from Hugging Face: {e}"
                 sys.exit("Model load has failed from both local and Hugging Face sources.")
         except Exception as e:
             # Handle unexpected errors
-            logging.error(f"Unexpected error occurred: {e}")
+            raise "Unexpected error occurred: {e}"
             traceback.print_exc()
             sys.exit("Model load has failed due to an unexpected error.")
 
