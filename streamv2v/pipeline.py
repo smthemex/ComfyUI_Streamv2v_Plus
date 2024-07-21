@@ -32,7 +32,7 @@ def get_instance_path(path):
 class StreamV2V:
     def __init__(
         self,
-        pipe: StableDiffusionPipeline,
+        pipe,
         t_index_list: List[int],
         torch_dtype: torch.dtype = torch.float16,
         width: int = 512,
