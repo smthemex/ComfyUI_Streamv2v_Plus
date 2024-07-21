@@ -23,7 +23,7 @@ torch.backends.cudnn.allow_tf32 = True
 class StreamV2VWrapper:
     def __init__(
         self,
-        model_id_or_path: str,
+        pipe,
         t_index_list: List[int],
         lora_dict: Optional[Dict[str, float]] = None,
         output_type: Literal["pil", "pt", "np", "latent"] = "pil",
@@ -142,8 +142,10 @@ class StreamV2VWrapper:
             The directory for the engine, by default "engines".
         """
         # TODO: Test SD turbo
-        self.sd_turbo = "turbo" in model_id_or_path
-        self.sd_xl = "xl" in model_id_or_path
+        # self.sd_turbo = "turbo" in model_id_or_path
+        # self.sd_xl = "xl" in model_id_or_path
+        self.sd_turbo = None
+        self.sd_xl =  None
 
         if mode == "txt2img":
             if cfg_type != "none":
@@ -188,7 +190,7 @@ class StreamV2VWrapper:
         self.use_safety_checker = use_safety_checker
 
         self.stream: StreamV2V = self._load_model(
-            model_id_or_path=model_id_or_path,
+            pipe,
             lora_dict=lora_dict,
             lcm_lora_id=lcm_lora_id,
             vae_id=vae_id,
@@ -385,7 +387,7 @@ class StreamV2VWrapper:
 
     def _load_model(
         self,
-        model_id_or_path: str,
+        pipe,
         t_index_list: List[int],
         lora_dict: Optional[Dict[str, float]] = None,
         lcm_lora_id: Optional[str] = None,
@@ -449,24 +451,24 @@ class StreamV2VWrapper:
             The loaded model.
         """
 
-        # Choose the pipeline based on the flag
-        pipeline_cls = StableDiffusionXLPipeline if self.sd_xl else StableDiffusionPipeline
+#         # Choose the pipeline based on the flag
+#         pipeline_cls = StableDiffusionXLPipeline if self.sd_xl else StableDiffusionPipeline
 
-        try:
-            # Attempt to load the model from a local directory
-            pipe = pipeline_cls.from_pretrained(model_id_or_path).to(device=self.device, dtype=self.dtype)
-        except ValueError:
-            # If the model is not found locally, load from Hugging Face
-            try:
-                pipe = pipeline_cls.from_single_file(model_id_or_path).to(device=self.device, dtype=self.dtype)
-            except Exception as e:
-                raise "Failed to load model from Hugging Face: {e}"
-                sys.exit("Model load has failed from both local and Hugging Face sources.")
-        except Exception as e:
-            # Handle unexpected errors
-            raise "Unexpected error occurred: {e}"
-            traceback.print_exc()
-            sys.exit("Model load has failed due to an unexpected error.")
+#         try:
+#             # Attempt to load the model from a local directory
+#             pipe = pipeline_cls.from_pretrained(model_id_or_path).to(device=self.device, dtype=self.dtype)
+#         except ValueError:
+#             # If the model is not found locally, load from Hugging Face
+#             try:
+#                 pipe = pipeline_cls.from_single_file(model_id_or_path).to(device=self.device, dtype=self.dtype)
+#             except Exception as e:
+#                 logging.error(f"Failed to load model from Hugging Face: {e}")
+#                 sys.exit("Model load has failed from both local and Hugging Face sources.")
+#         except Exception as e:
+#             # Handle unexpected errors
+#             logging.error(f"Unexpected error occurred: {e}")
+#             traceback.print_exc()
+#             sys.exit("Model load has failed due to an unexpected error.")
 
         if self.sd_xl:
             # Avoid error if "text_embeds" not in added_cond_kwargs: TypeError: argument of type 'NoneType' is not iterable
@@ -484,21 +486,21 @@ class StreamV2VWrapper:
             use_denoising_batch=self.use_denoising_batch,
             cfg_type=cfg_type,
         )
-        if not self.sd_turbo:
-            if use_lcm_lora:
-                if lcm_lora_id is not None:
-                    stream.load_lcm_lora(
-                        pretrained_model_name_or_path_or_dict=lcm_lora_id,
-                        adapter_name="lcm")
-                else:
-                    stream.load_lcm_lora(
-                        pretrained_model_name_or_path_or_dict="latent-consistency/lcm-lora-sdv1-5",
-                        adapter_name="lcm"
-                        )
+#         if not self.sd_turbo:
+#             if use_lcm_lora:
+#                 if lcm_lora_id is not None:
+#                     stream.load_lcm_lora(
+#                         pretrained_model_name_or_path_or_dict=lcm_lora_id,
+#                         adapter_name="lcm")
+#                 else:
+#                     stream.load_lcm_lora(
+#                         pretrained_model_name_or_path_or_dict="latent-consistency/lcm-lora-sdv1-5",
+#                         adapter_name="lcm"
+#                         )
 
-            if lora_dict is not None:
-                for lora_name, lora_scale in lora_dict.items():
-                    stream.load_lora(lora_name)
+#             if lora_dict is not None:
+#                 for lora_name, lora_scale in lora_dict.items():
+#                     stream.load_lora(lora_name)
                     
         if use_tiny_vae:
             if vae_id is not None:
