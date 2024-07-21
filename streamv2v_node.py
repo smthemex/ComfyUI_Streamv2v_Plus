@@ -16,8 +16,8 @@ import numpy as np
 import sys
 import folder_paths
 import cv2
-
-
+import logging
+from diffusers import LCMScheduler, StableDiffusionPipeline
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 path_dir = os.path.dirname(CURRENT_DIR)
 file_path = os.path.dirname(path_dir)
@@ -95,7 +95,50 @@ def instance_path(path, repo):
             repo = get_instance_path(model_path)
     return repo
 
-class Load_Stream:
+# class Img_In:
+#     def __init__(self):
+#         pass
+#     def process_img(self,img):
+#         img= tensor_to_image
+#         return img
+
+
+class Stream_Model_Loader:
+    def __init__(self):
+        pass
+        
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "repo_id": ("STRING", {"default": "runwayml/stable-diffusion-v1-5"}),
+                "local_model":(paths,),
+            }
+        }
+
+    RETURN_TYPES = ("MODEL",)
+    RETURN_NAMES = ("pipe",)
+    FUNCTION = "main"
+    CATEGORY = "StreamV2V_Plus"
+
+    def main(self,repo_id,local_model,):
+        device="cuda"
+        #加载pipe
+        model_id = instance_path(local_model, repo_id)
+        try:
+            # Attempt to load the model from a local directory
+            pipe = StableDiffusionPipeline.from_pretrained(model_id).to(device=device, dtype=torch.float16)
+        except ValueError:
+            # If the model is not found locally, load from Hugging Face
+            try:
+                pipe = StableDiffusionPipeline.from_single_file(model_id).to(device=device, dtype=torch.float16)
+            except Exception as e:
+                raise "Failed to load model from Hugging Face"
+                  
+        return (pipe,)
+        
+
+class Stream_Sampler:
     def __init__(self):
         pass
 
@@ -105,52 +148,48 @@ class Load_Stream:
                        os.path.isfile(os.path.join(input_path, f)) and f.split('.')[-1] in ["mp4", "webm", "mkv",
                                                                                             "avi"]]
         return {
-            "required": {
+            "required": { 
+                "pipe":("MODEL",),
+                "prompt": ("STRING", {"multiline": True, "default": "Claymation, a man is giving a talk"}), 
                 "video": (["none"]+video_files,),
-                "local_model": (paths,),
-                "repo_id": ("STRING", {"default": "runwayml/stable-diffusion-v1-5"}),
-                "vae_id": ("STRING", {"default": "madebyollin/taesd"}),
-                "lora": (["none"] + folder_paths.get_filename_list("loras"),),
-                "lora_scale": ("FLOAT", {"default": 0.8, "min": 0.1, "max": 1.0, "step": 0.1}),
-                "trigger_word": ("STRING", {"default": "best quality"}),
                 "sampler_type": (["txt2img", "vdieo2vdieo","WebCam2Video"],),
                 "scale": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 10.0, "step": 0.1, "round": 0.01}),
-                "width": ("INT", {"default": 512, "min": 256, "max": 4096, "step": 64, }),
-                "height": ("INT", {"default": 512, "min": 256, "max": 4096, "step": 64}),
                 "guidance_scale": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 30.0, "step": 0.1, "round": 0.01}),
                 "diffusion_steps": ("INT", {"default": 4, "min": 1, "max": 1000}),
                 "num_inference_steps": ("INT", {"default": 50, "min": 1, "max": 1000}),
                 "noise_strength": ("FLOAT", {"default": 0.4, "min": 0.0, "max": 1.0, "step": 0.1, "round": 0.01}),
-                "seed": ("INT", {"default": 2, "min": 0, "max": 0xffffffffffffffff})}}
+                "seed": ("INT", {"default": 2, "min": 0, "max": 0xffffffffffffffff}),
+                "vae_id": ("STRING", {"default": "madebyollin/taesd"}),
+                "index_list":(["txt2img","video2video","cam2video"],),
+                "acceleration":(["xformers","tensorrt","sfast"],),
+                "lora": (["none"] + folder_paths.get_filename_list("loras"),),
+                "lora_scale": ("FLOAT", {"default": 0.8, "min": 0.1, "max": 1.0, "step": 0.1}),
+                "trigger_word": ("STRING", {"default": "best quality"}),
+                "width": ("INT", {"default": 512, "min": 256, "max": 4096, "step": 64, }),
+                "height": ("INT", {"default": 512, "min": 256, "max": 4096, "step": 64}),
+                "cfg_type":(["none", "full", "self", "initialize"],),},
+            "optional":{"image": ("IMAGE",),
+                       }
+        }
 
-    RETURN_TYPES = ("MODEL","CONDITIONING","STRING")
-    RETURN_NAMES = ("stream","video","info",)
-    FUNCTION = "load_stream"
+    RETURN_TYPES = ("IMAGE","FLOAT",)
+    RETURN_NAMES = ("image","fps",)
+    FUNCTION = "main_stream"
     CATEGORY = "StreamV2V_Plus"
 
-    def load_stream(self, video,
-                     local_model, repo_id,
-                     vae_id,
-                     lora,
-                     lora_scale,
-                     trigger_word,sampler_type,
-                     scale,width,height,
-                     guidance_scale,
-                     diffusion_steps,
-                     num_inference_steps,
-                     noise_strength,
-                     seed,
-                     ):
+    def main_stream(self,pipe,prompt,video,sampler_type,scale,guidance_scale,diffusion_steps,num_inference_steps,
+                    noise_strength,seed,vae_id,index_list,acceleration,lora,lora_scale,trigger_word,width,height,cfg_type,**kwargs):
 
-        model_id = instance_path(local_model, repo_id)
-        if model_id == "none":
-            raise "need local model or repo_id"
+       
         output_dir = os.path.join(file_path, "output")
         fps=25
         height_v=512
         width_v=512
-
+  
+        image=kwargs.get("image")
+        
         if sampler_type=="vdieo2vdieo":
+            
             if video == "none":
                 raise "need video input"
             input_video = get_instance_path(os.path.join(input_path, video))
@@ -167,7 +206,7 @@ class Load_Stream:
             t_index_list = [init_step + i * interval for i in range(diffusion_steps)]
 
             stream = StreamV2VWrapper(
-                model_id_or_path=model_id,
+                pipe,
                 mode="img2img",
                 t_index_list=t_index_list,
                 frame_buffer_size=1,
@@ -196,10 +235,35 @@ class Load_Stream:
             stream.stream.load_lora(lora_path, adapter_name=trigger_word)
             stream.stream.pipe.set_adapters(adapter_names=["lcm", trigger_word], adapter_weights=[1.0, lora_scale])
             print(f"Use LORA: {trigger_word} in {lora}")
+            prompt = prompt + " " + trigger_word + "style"
+            stream.prepare(
+                prompt=prompt,
+                num_inference_steps=num_inference_steps,
+                guidance_scale=guidance_scale,
+            )
+
+            video_result = torch.zeros(video.shape[0], height, width, 3)
+
+            for _ in range(stream.batch_size):
+                stream(image=video[0].permute(2, 0, 1))
+
+            inference_time = []
+            for i in tqdm(range(video.shape[0])):
+                iteration_start_time = time.time()
+                output_image = stream(video[i].permute(2, 0, 1))
+                video_result[i] = output_image.permute(1, 2, 0)
+                iteration_end_time = time.time()
+                inference_time.append(iteration_end_time - iteration_start_time)
+            print(f'Avg time: {sum(inference_time[20:]) / len(inference_time[20:])}')
+
+            gen = get_video_img(video_result)
+            gen = narry_list(gen)  # 列表排序
+            images = torch.from_numpy(np.fromiter(gen, np.dtype((np.float32, (height, width, 3)))))
+            return (images, fps)
 
         elif sampler_type=="txt2img":
             stream = StreamV2VWrapper(
-                model_id_or_path=model_id,
+                pipe,
                 t_index_list=[0, 16, 32, 45],
                 lora_dict=None,
                 output_type="pil",
@@ -226,9 +290,13 @@ class Load_Stream:
                 seed=seed,
                 use_safety_checker=False
             )
+            prompt = prompt + " " + trigger_word + "style"
+            images = phi2narry(stream.txt2img(prompt))
+            return (images,)
+                   
         else:
             stream = StreamV2VWrapper(
-                model_id_or_path=model_id,
+                pipe,
                 mode="img2img",
                 t_index_list=[30, 35, 40, 45],
                 frame_buffer_size=1,
@@ -256,136 +324,20 @@ class Load_Stream:
             stream.stream.load_lora(lora_path, adapter_name=trigger_word)
             stream.stream.pipe.set_adapters(adapter_names=["lcm", trigger_word], adapter_weights=[1.0, lora_scale])
             print(f"Use LORA: {trigger_word} in {lora}")
-
-        info=";".join([str(fps),str(height_v), str(width_v),str(guidance_scale),str(num_inference_steps),trigger_word])
-        return (stream,video,info)
-
-
-class Video2Video:
-    def __init__(self):
-        pass
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "stream": ("MODEL",),
-                "video":("CONDITIONING",),
-                "info":("STRING", {"forceInput": True, "default": ""}),
-                "prompt": ("STRING", {"multiline": True, "default": "Claymation, a man is giving a talk"}),
-            }
-        }
-
-    RETURN_TYPES = ("IMAGE","FLOAT")
-    RETURN_NAMES = ("image","frame_rate")
-    FUNCTION = "main_process"
-    CATEGORY = "StreamV2V_Plus"
-
-
-    def main_process(self, stream,video,info,prompt,):
-
-        fps,height, width,guidance_scale,num_inference_steps,trigger_word=info.split(";")
-        fps=float(fps)
-        height=int(height)
-        width=int(width)
-        guidance_scale=float(guidance_scale)
-        num_inference_steps=int(num_inference_steps)
-
-        prompt = prompt + " " + trigger_word + "style"
-        stream.prepare(
-            prompt=prompt,
-            num_inference_steps=num_inference_steps,
-            guidance_scale=guidance_scale,
-        )
-
-        video_result = torch.zeros(video.shape[0], height, width, 3)
-
-        for _ in range(stream.batch_size):
-            stream(image=video[0].permute(2, 0, 1))
-
-        inference_time = []
-        for i in tqdm(range(video.shape[0])):
-            iteration_start_time = time.time()
-            output_image = stream(video[i].permute(2, 0, 1))
-            video_result[i] = output_image.permute(1, 2, 0)
-            iteration_end_time = time.time()
-            inference_time.append(iteration_end_time - iteration_start_time)
-        print(f'Avg time: {sum(inference_time[20:]) / len(inference_time[20:])}')
-
-        gen = get_video_img(video_result)
-        gen = narry_list(gen)  # 列表排序
-        images = torch.from_numpy(np.fromiter(gen, np.dtype((np.float32, (height, width, 3)))))
-        frame_rate = float(fps)
-        return (images, frame_rate)
-
-
-class Text2IMG:
-    def __init__(self):
-        pass
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "stream": ("MODEL",),
-                "info": ("STRING", {"forceInput": True, "default": ""}),
-                "prompt": ("STRING", {"multiline": True, "default": "Claymation, a man is giving a talk"}),
-
-            }
-        }
-
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("image",)
-    FUNCTION = "txt2img_process"
-    CATEGORY = "StreamV2V_Plus"
-
-    def txt2img_process(self, stream,info,prompt,):
-        fps, height, width, guidance_scale, num_inference_steps, trigger_word = info.split(";")
-        prompt = prompt + " " + trigger_word + "style"
-        image = phi2narry(stream.txt2img(prompt))
-        return (image,)
-
-
-class WebCam2Video:
-    def __init__(self):
-        pass
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "stream": ("MODEL",),
-                "image": ("IMAGE",),
-                "info": ("STRING", {"forceInput": True, "default": ""}),
-                "prompt": ("STRING", {"multiline": True, "default": "Claymation, a man is giving a talk"}),
-            }
-        }
-
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("images",)
-    FUNCTION = "webcam2img_process"
-    CATEGORY = "StreamV2V_Plus"
-
-    def webcam2img_process(self,stream,image,info,prompt):
-        fps, height, width, guidance_scale, num_inference_steps, trigger_word = info.split(";")
-        prompt = prompt + " " + trigger_word + "style"
-        image = tensor_to_image(image)
-        output_image = stream(image=image, prompt=prompt)
-        print(type(output_image))
-        images = phi2narry(output_image)
-        return (images,)
+            prompt = prompt + " " + trigger_word + "style"
+            image = tensor_to_image(image)
+            output_image = stream(image=image, prompt=prompt)
+            print(type(output_image))
+            images = phi2narry(output_image)
+            return (images,)
 
 
 NODE_CLASS_MAPPINGS = {
-    "Load_Stream":Load_Stream,
-    "Video2Video": Video2Video,
-    "Text2IMG": Text2IMG,
-    "WebCam2Video": WebCam2Video
+    "Stream_Model_Loader":Stream_Model_Loader,
+    "Stream_Sampler": Stream_Sampler,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "Load_Stream":"Load_Stream",
-    "Video2Video": "Video2Video",
-    "Text2IMG": "Text2IMG",
-    "WebCam2Video": "WebCam2Video"
+    "Stream_Sampler": "Stream_Sampler",
 }
