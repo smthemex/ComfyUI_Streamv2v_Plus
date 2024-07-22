@@ -59,6 +59,7 @@ class StreamV2VWrapper:
         seed: int = 2,
         use_safety_checker: bool = False,
         engine_dir: Optional[Union[str, Path]] = "engines",
+        using_sdxl:bool = False,
     ):
         """
         Initializes the StreamV2VWrapper.
@@ -145,7 +146,7 @@ class StreamV2VWrapper:
         # self.sd_turbo = "turbo" in model_id_or_path
         # self.sd_xl = "xl" in model_id_or_path
         self.sd_turbo = None
-        self.sd_xl =  None
+        self.sd_xl = using_sdxl
 
         if mode == "txt2img":
             if cfg_type != "none":
@@ -502,15 +503,15 @@ class StreamV2VWrapper:
 #                 for lora_name, lora_scale in lora_dict.items():
 #                     stream.load_lora(lora_name)
                     
-        if use_tiny_vae:
-            if vae_id is not None:
-                stream.vae = AutoencoderTiny.from_pretrained(vae_id).to(
-                    device=pipe.device, dtype=pipe.dtype
-                )
-            else:
-                stream.vae = AutoencoderTiny.from_pretrained("madebyollin/taesd").to(
-                    device=pipe.device, dtype=pipe.dtype
-                )
+        # if use_tiny_vae:
+        #     if vae_id is not None:
+        #         stream.vae = AutoencoderTiny.from_pretrained(vae_id).to(
+        #             device=pipe.device, dtype=pipe.dtype
+        #         )
+        #     else:
+        #         stream.vae = AutoencoderTiny.from_pretrained("madebyollin/taesd").to(
+        #             device=pipe.device, dtype=pipe.dtype
+        #         )
 
         try:
             if acceleration == "xformers":
@@ -557,17 +558,17 @@ class StreamV2VWrapper:
                         stream.pipe.unet.set_attn_processor(new_attn_processors)
 
                 from polygraphy import cuda
-                from streamv2v.acceleration.tensorrt import (
+                from ..streamv2v.acceleration.tensorrt import (
                     TorchVAEEncoder,
                     compile_unet,
                     compile_vae_decoder,
                     compile_vae_encoder,
                 )
-                from streamv2v.acceleration.tensorrt.engine import (
+                from ..streamv2v.acceleration.tensorrt.engine import (
                     AutoencoderKLEngine,
                     UNet2DConditionModelEngine,
                 )
-                from streamv2v.acceleration.tensorrt.models import (
+                from ..streamv2v.acceleration.tensorrt.models import (
                     VAE,
                     UNet,
                     VAEEncoder,
