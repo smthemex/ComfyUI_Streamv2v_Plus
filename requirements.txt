@@ -1,3 +1,4 @@
 einops
 av
 peft
+fire
