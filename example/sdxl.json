@@ -1,0 +1,281 @@
+{
+  "last_node_id": 12,
+  "last_link_id": 23,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "Stream_Model_Loader",
+      "pos": [
+        472,
+        267
+      ],
+      "size": {
+        "0": 315,
+        "1": 174
+      },
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "pipe",
+          "type": "MODEL",
+          "links": [
+            19
+          ],
+          "shape": 3,
+          "label": "pipe",
+          "slot_index": 0
+        },
+        {
+          "name": "info",
+          "type": "STRING",
+          "links": [
+            20
+          ],
+          "shape": 3,
+          "label": "info",
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Stream_Model_Loader"
+      },
+      "widgets_values": [
+        "0SDXL\\sd_xl_turbo_1.0_fp16.safetensors",
+        "LCM",
+        true,
+        "madebyollin/sdxl-vae-fp16-fix",
+        "0sdxl\\lcm-lora-sdxl.safetensors"
+      ]
+    },
+    {
+      "id": 11,
+      "type": "Stream_Lora_Loader",
+      "pos": [
+        825,
+        277
+      ],
+      "size": {
+        "0": 315,
+        "1": 150
+      },
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pipe",
+          "type": "MODEL",
+          "link": 19,
+          "label": "pipe"
+        },
+        {
+          "name": "info",
+          "type": "STRING",
+          "link": 20,
+          "widget": {
+            "name": "info"
+          },
+          "label": "info"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pipe",
+          "type": "MODEL",
+          "links": [
+            21
+          ],
+          "shape": 3,
+          "label": "pipe",
+          "slot_index": 0
+        },
+        {
+          "name": "info",
+          "type": "STRING",
+          "links": [
+            22
+          ],
+          "shape": 3,
+          "label": "info",
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Stream_Lora_Loader"
+      },
+      "widgets_values": [
+        "",
+        "0sdxl\\Soft_Illustration.safetensors",
+        0.8,
+        "soft"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "PreviewImage",
+      "pos": [
+        1589,
+        286
+      ],
+      "size": {
+        "0": 357.2234191894531,
+        "1": 399.2335205078125
+      },
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 17,
+          "label": "images"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      }
+    },
+    {
+      "id": 7,
+      "type": "Stream_Sampler",
+      "pos": [
+        1176,
+        282
+      ],
+      "size": {
+        "0": 377.7458190917969,
+        "1": 404
+      },
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pipe",
+          "type": "MODEL",
+          "link": 21,
+          "label": "pipe"
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": null,
+          "label": "image",
+          "slot_index": 1
+        },
+        {
+          "name": "info",
+          "type": "STRING",
+          "link": 22,
+          "widget": {
+            "name": "info"
+          },
+          "label": "info"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": [
+            17
+          ],
+          "shape": 3,
+          "label": "image",
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [],
+          "shape": 3,
+          "label": "audio",
+          "slot_index": 1
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "links": [],
+          "shape": 3,
+          "label": "fps",
+          "slot_index": 2
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Stream_Sampler"
+      },
+      "widgets_values": [
+        "",
+        "a man is giving a talk",
+        "jeff_1.mp4",
+        "txt2img",
+        1,
+        1,
+        50,
+        0.4,
+        971713790321203,
+        "randomize",
+        1024,
+        1024,
+        1
+      ]
+    }
+  ],
+  "links": [
+    [
+      17,
+      7,
+      0,
+      10,
+      0,
+      "IMAGE"
+    ],
+    [
+      19,
+      1,
+      0,
+      11,
+      0,
+      "MODEL"
+    ],
+    [
+      20,
+      1,
+      1,
+      11,
+      1,
+      "STRING"
+    ],
+    [
+      21,
+      11,
+      0,
+      7,
+      0,
+      "MODEL"
+    ],
+    [
+      22,
+      11,
+      1,
+      7,
+      2,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1.3310000000000008,
+      "offset": [
+        -405.3883261582477,
+        -27.772762055384575
+      ]
+    }
+  },
+  "version": 0.4
+}
