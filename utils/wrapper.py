@@ -514,26 +514,27 @@ class StreamV2VWrapper:
         #         )
 
         try:
-            if acceleration == "xformers":
-                stream.pipe.enable_xformers_memory_efficient_attention()
-                if self.use_cached_attn:
-                    attn_processors = stream.pipe.unet.attn_processors
-                    new_attn_processors = {}
-                    for key, attn_processor in attn_processors.items():
-                        assert isinstance(attn_processor, XFormersAttnProcessor), \
-                              "We only replace 'XFormersAttnProcessor' to 'CachedSTXFormersAttnProcessor'"
-                        new_attn_processors[key] = CachedSTXFormersAttnProcessor(name=key,
-                                                                                 use_feature_injection=self.use_feature_injection,
-                                                                                 feature_injection_strength=self.feature_injection_strength,
-                                                                                 feature_similarity_threshold=self.feature_similarity_threshold,
-                                                                                 interval=self.cache_interval, 
-                                                                                 max_frames=self.cache_maxframes,
-                                                                                 use_tome_cache=self.use_tome_cache,
-                                                                                 tome_metric=self.tome_metric,
-                                                                                 tome_ratio=self.tome_ratio,
-                                                                                 use_grid=self.use_grid)
-                    stream.pipe.unet.set_attn_processor(new_attn_processors)
-
+            
+            # if acceleration == "xformers":
+            #     stream.pipe.enable_xformers_memory_efficient_attention()
+            #     if self.use_cached_attn:
+            #         attn_processors = stream.pipe.unet.attn_processors
+            #         new_attn_processors = {}
+            #         for key, attn_processor in attn_processors.items():
+            #             assert isinstance(attn_processor, XFormersAttnProcessor), \
+            #                 "We only replace 'XFormersAttnProcessor' to 'CachedSTXFormersAttnProcessor'"
+            #             new_attn_processors[key] = CachedSTXFormersAttnProcessor(name=key,
+            #                                                                      use_feature_injection=self.use_feature_injection,
+            #                                                                      feature_injection_strength=self.feature_injection_strength,
+            #                                                                      feature_similarity_threshold=self.feature_similarity_threshold,
+            #                                                                      interval=self.cache_interval,
+            #                                                                      max_frames=self.cache_maxframes,
+            #                                                                      use_tome_cache=self.use_tome_cache,
+            #                                                                      tome_metric=self.tome_metric,
+            #                                                                      tome_ratio=self.tome_ratio,
+            #                                                                      use_grid=self.use_grid)
+            #         stream.pipe.unet.set_attn_processor(new_attn_processors)
+            
             if acceleration == "tensorrt":
                 if self.use_cached_attn:
                     raise NotImplementedError("TensorRT seems not support the costom attention_processor")
