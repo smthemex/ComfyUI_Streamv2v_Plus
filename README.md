@@ -38,7 +38,11 @@ git clone https://github.com/smthemex/ComfyUI_Streamv2v_Plus.git
 pip install -r requirements.txt
 
 ```
-    
+
+（如果peft报错）if get error about ：PEFT backend is required for this method  
+请按以下代码更新 PEFT和transformers 
+pip install  -U PEFT  transformers 
+
 缺啥装啥。。。  
 If the module is missing, , pip install  missing module.       
 
