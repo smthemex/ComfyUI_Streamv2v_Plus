@@ -13,7 +13,7 @@ from PIL import Image
 from ..streamv2v import StreamV2V
 from ..streamv2v.image_utils import postprocess_image
 from ..streamv2v.models.attention_processor import CachedSTXFormersAttnProcessor, CachedSTAttnProcessor2_0
-
+import folder_paths
 
 torch.set_grad_enabled(False)
 torch.backends.cuda.matmul.allow_tf32 = True
@@ -60,6 +60,7 @@ class StreamV2VWrapper:
         use_safety_checker: bool = False,
         engine_dir: Optional[Union[str, Path]] = "engines",
         using_sdxl:bool = False,
+        model_id_or_path="",
     ):
         """
         Initializes the StreamV2VWrapper.
@@ -147,6 +148,7 @@ class StreamV2VWrapper:
         # self.sd_xl = "xl" in model_id_or_path
         self.sd_turbo = None
         self.sd_xl = using_sdxl
+        self.ckpt_name=model_id_or_path
 
         if mode == "txt2img":
             if cfg_type != "none":
@@ -393,7 +395,7 @@ class StreamV2VWrapper:
         lora_dict: Optional[Dict[str, float]] = None,
         lcm_lora_id: Optional[str] = None,
         vae_id: Optional[str] = None,
-        acceleration: Literal["none", "xformers", "tensorrt"] = "xformers",
+        acceleration = "xformers",
         warmup: int = 10,
         do_add_noise: bool = True,
         use_lcm_lora: bool = True,
@@ -401,7 +403,7 @@ class StreamV2VWrapper:
         cfg_type: Literal["none", "full", "self", "initialize"] = "self",
         seed: int = 2,
         engine_dir: Optional[Union[str, Path]] = "engines",
-    ) -> StreamV2V:
+        polygraphy=None) -> StreamV2V:
         """
         Loads the model.
 
@@ -514,26 +516,26 @@ class StreamV2VWrapper:
         #         )
 
         try:
-            
-            # if acceleration == "xformers":
-            #     stream.pipe.enable_xformers_memory_efficient_attention()
-            #     if self.use_cached_attn:
-            #         attn_processors = stream.pipe.unet.attn_processors
-            #         new_attn_processors = {}
-            #         for key, attn_processor in attn_processors.items():
-            #             assert isinstance(attn_processor, XFormersAttnProcessor), \
-            #                 "We only replace 'XFormersAttnProcessor' to 'CachedSTXFormersAttnProcessor'"
-            #             new_attn_processors[key] = CachedSTXFormersAttnProcessor(name=key,
-            #                                                                      use_feature_injection=self.use_feature_injection,
-            #                                                                      feature_injection_strength=self.feature_injection_strength,
-            #                                                                      feature_similarity_threshold=self.feature_similarity_threshold,
-            #                                                                      interval=self.cache_interval,
-            #                                                                      max_frames=self.cache_maxframes,
-            #                                                                      use_tome_cache=self.use_tome_cache,
-            #                                                                      tome_metric=self.tome_metric,
-            #                                                                      tome_ratio=self.tome_ratio,
-            #                                                                      use_grid=self.use_grid)
-            #         stream.pipe.unet.set_attn_processor(new_attn_processors)
+            model_id_or_path=folder_paths.get_full_path("checkpoints", self.ckpt_name)
+            if acceleration == "xformers":
+                stream.pipe.enable_xformers_memory_efficient_attention()
+                if self.use_cached_attn:
+                    attn_processors = stream.pipe.unet.attn_processors
+                    new_attn_processors = {}
+                    for key, attn_processor in attn_processors.items():
+                        assert isinstance(attn_processor, XFormersAttnProcessor), \
+                            "We only replace 'XFormersAttnProcessor' to 'CachedSTXFormersAttnProcessor'"
+                        new_attn_processors[key] = CachedSTXFormersAttnProcessor(name=key,
+                                                                                 use_feature_injection=self.use_feature_injection,
+                                                                                 feature_injection_strength=self.feature_injection_strength,
+                                                                                 feature_similarity_threshold=self.feature_similarity_threshold,
+                                                                                 interval=self.cache_interval,
+                                                                                 max_frames=self.cache_maxframes,
+                                                                                 use_tome_cache=self.use_tome_cache,
+                                                                                 tome_metric=self.tome_metric,
+                                                                                 tome_ratio=self.tome_ratio,
+                                                                                 use_grid=self.use_grid)
+                    stream.pipe.unet.set_attn_processor(new_attn_processors)
             
             if acceleration == "tensorrt":
                 if self.use_cached_attn:
@@ -553,7 +555,7 @@ class StreamV2VWrapper:
                                                                                     interval=self.cache_interval, 
                                                                                     max_frames=self.cache_maxframes,
                                                                                     use_tome_cache=self.use_tome_cache,
-                                                                                    tome_metric=self.tome_metric,
+                                                                                                 tome_metric=self.tome_metric,
                                                                                     tome_ratio=self.tome_ratio,
                                                                                     use_grid=self.use_grid)
                         stream.pipe.unet.set_attn_processor(new_attn_processors)
