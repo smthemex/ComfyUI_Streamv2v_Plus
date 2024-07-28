@@ -1,9 +1,29 @@
 from typing import *
 
 import torch
-from diffusers.models.autoencoder_tiny import AutoencoderTinyOutput
-from diffusers.models.unet_2d_condition import UNet2DConditionOutput
-from diffusers.models.vae import DecoderOutput
+try:
+    from diffusers.models.autoencoders.autoencoder_tiny import AutoencoderTinyOutput
+except:
+    try:
+        from diffusers.models.autoencoder_tiny import AutoencoderTinyOutput
+    except:
+        raise "diffusers import error"
+
+try:
+    from diffusers.models.unets.unet_2d_condition import UNet2DConditionOutput
+except:
+    try:
+        from diffusers.models.unet_2d_condition import UNet2DConditionOutput
+    except:
+        raise "diffusers import error"
+
+try:
+    from diffusers.models.autoencoders.vae import DecoderOutput
+except:
+    try:
+        from diffusers.models.vae import DecoderOutput
+    except:
+        raise "diffusers import error"
 from polygraphy import cuda
 
 from .utilities import Engine
