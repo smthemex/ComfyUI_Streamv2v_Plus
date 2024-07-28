@@ -43,6 +43,14 @@ pip install -r requirements.txt
 请按以下代码更新 PEFT和transformers 
 pip install  -U PEFT  transformers 
 
+tensorrt still has bug，need module below：       
+tensorrt 暂时无法使用，以下是需求库，可以不装       
+polygraphy      
+onnx_graphsurgeon   
+tensorrt   
+cuda-python   
+
+
 缺啥装啥。。。  
 If the module is missing, , pip install  missing module.       
 
@@ -67,7 +75,7 @@ when you changge a style lora，twigger word need change  so. 改变风格lora�
 4 Function Description
 --
 4.1 txt2img   文生图   
-4.2 webcam2img/img2img  （To be improved）  摄像头生图  
+4.2 webcam2img/img2img   摄像头生图  
 4.3 video2video  视频转绘  
 
 5.example 示例
@@ -77,6 +85,9 @@ sd1.5 txt2im/img2img/webcam2img/video2video  选择菜单使用不同的功能�
 
 SDXL（turbo 1 step，XL 4 step） SDXL示例，选择菜单使用不同的功能。
 ![](https://github.com/smthemex/ComfyUI_Streamv2v_Plus/blob/main/example/sdxl.png)
+
+cam2video or cam2img need more vr  摄像头生图得看配置，低的跑的慢。
+![](https://github.com/smthemex/ComfyUI_Streamv2v_Plus/blob/main/example/cam.jpg)
 
 6 Citation
 ------
