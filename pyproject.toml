@@ -2,7 +2,7 @@
 name = "comfyui_streamv2v_plus"
 description = "using streamv2v in comfyui "
 version = "1.0.0"
-license = "LICENSE"
+license = { file = "LICENSE" }
 dependencies = ["einops", "av", "peft", "fire"]
 
 [project.urls]
