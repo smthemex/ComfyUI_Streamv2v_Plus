@@ -195,22 +195,24 @@ class Stream_Model_Loader:
         scheduler_used = get_sheduler(scheduler)
 
         if use_sdxl:
+            model_config = "stabilityai/stable-diffusion-xl-base-1.0"
             original_config_file = os.path.join(CURRENT_DIR, "models", "sd_xl_base.yaml")
             if dif_version_int >= 28:
                 pipe = StableDiffusionXLPipeline.from_single_file(
-                    ckpt_path, original_config=original_config_file, torch_dtype=torch.float16).to("cuda")
+                    ckpt_path, config=model_config,original_config=original_config_file, torch_dtype=torch.float16).to("cuda")
             else:
                 pipe = StableDiffusionXLPipeline.from_single_file(
-                    ckpt_path, original_config_file=original_config_file, torch_dtype=torch.float16).to("cuda")
+                    ckpt_path,config=model_config, original_config_file=original_config_file, torch_dtype=torch.float16).to("cuda")
             info = "sdxl"
         else:
+            model_config = "Lykon/dreamshaper-8"
             original_config_file = os.path.join(folder_paths.models_dir, "configs", "v1-inference.yaml")
             if dif_version_int >= 28:
                 pipe = StableDiffusionPipeline.from_single_file(
-                    ckpt_path, original_config=original_config_file, torch_dtype=torch.float16).to("cuda")
+                    ckpt_path,config=model_config, original_config=original_config_file, torch_dtype=torch.float16).to("cuda")
             else:
                 pipe = StableDiffusionPipeline.from_single_file(
-                    ckpt_path, original_config_file=original_config_file, torch_dtype=torch.float16).to("cuda")
+                    ckpt_path, config=model_config,original_config_file=original_config_file, torch_dtype=torch.float16).to("cuda")
             info = "sd15"
         if vae_id != "":
             pipe.vae = AutoencoderKL.from_pretrained(vae_id, torch_dtype=torch.float16).to("cuda")
